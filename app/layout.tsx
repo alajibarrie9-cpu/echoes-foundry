@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./cloud.css";
+import "./manufacture.css";
+import "./inventory-list.css";
 
 export const metadata: Metadata = {
   title: "Echoes Foundry",

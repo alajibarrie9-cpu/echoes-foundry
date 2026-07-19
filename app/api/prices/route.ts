@@ -1,3 +1,28 @@
 import { NextResponse } from "next/server";
-const rows=(v:unknown):Array<Record<string,unknown>>=>Array.isArray(v)?v as Array<Record<string,unknown>>:((v as Record<string,unknown>)?.["hydra:member"]||(v as Record<string,unknown>)?.items||(v as Record<string,unknown>)?.data||[]) as Array<Record<string,unknown>>;
-export async function GET(){try{const [a,b]=await Promise.all([fetch("https://echoes.mobi/api/items?_format=json",{headers:{Accept:"application/json"},next:{revalidate:86400}}),fetch("https://echoes.mobi/api/item_weekly_average_prices?_format=json",{headers:{Accept:"application/json"},next:{revalidate:21600}})]);if(!a.ok||!b.ok)throw new Error("Price feed unavailable");const names=new Map<string,string>();rows(await a.json()).forEach(x=>{const id=String(x.id||x["@id"]||"").split("/").pop()||"";if(id&&x.name)names.set(id,String(x.name))});const prices:Record<string,number>={};rows(await b.json()).forEach(x=>{const item=(x.item||{}) as Record<string,unknown>;const id=String(item.id||x.itemId||x.item||"").split("/").pop()||"";const name=String(item.name||x.itemName||names.get(id)||"");const price=Number(x.averagePrice||x.average||x.price||x.value||0);if(name&&price>0)prices[name]=price});return NextResponse.json({prices,updatedAt:new Date().toISOString()})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Prices unavailable"},{status:502})}}
+
+export async function GET() {
+  try {
+    const response = await fetch("https://echoes.mobi/api/items?_format=json", {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 21600 }
+    });
+    if (!response.ok) throw new Error("Echoes.mobi price service unavailable");
+    const raw = await response.json();
+    const rows = Array.isArray(raw) ? raw : raw["hydra:member"] || raw.items || raw.data || [];
+    const prices: Record<string, number> = {};
+    for (const item of rows) {
+      const name = String(item.name || item.item_name || "");
+      const price = Number(item.weekly_average_price || 0);
+      if (name && Number.isFinite(price) && price > 0) prices[name] = price;
+    }
+    return NextResponse.json(
+      { prices, updatedAt: new Date().toISOString() },
+      { headers: { "cache-control": "public, s-maxage=21600, stale-while-revalidate=86400" } }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Prices unavailable" },
+      { status: 502 }
+    );
+  }
+}
