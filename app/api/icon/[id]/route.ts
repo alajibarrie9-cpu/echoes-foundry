@@ -1,2 +1,0 @@
-import { NextResponse } from "next/server";
-export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;if(!/^\d+$/.test(id))return new NextResponse("Bad icon",{status:400});const response=await fetch("https://echoes.mobi/public/icons/"+id+".png",{next:{revalidate:604800}});if(!response.ok)return new NextResponse("Missing icon",{status:404});return new NextResponse(await response.arrayBuffer(),{headers:{"content-type":"image/png","cache-control":"public, max-age=604800"}})}
