@@ -1,0 +1,27 @@
+{
+  "name": "echoes-foundry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "vinext build && mkdir -p dist/.openai && cp .openai/hosting.json dist/.openai/hosting.json",
+    "start": "next start",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "tesseract.js": "^7.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "next": "^15.4.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.0",
+    "vinext": "^1.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-rsc": "^0.5.28"
+  }
+}
